@@ -1,0 +1,3 @@
+[flake8]
+
+ignore = D102, D100
