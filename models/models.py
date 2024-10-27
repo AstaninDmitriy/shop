@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 import bcrypt
@@ -95,8 +95,49 @@ class ProductCategory(UUIDMixin, TimestampMixin):
     )
 
     category_id: Mapped[uuid.UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey('categories.id'),
+        PG_UUID(as_uuid=True), ForeignKey('categories.id'), default=uuid.uuid4,
     )
 
     product = relationship('Product', back_populates='categories')
     category = relationship('Category', back_populates='products')
+
+
+class Customer(UUIDMixin, TimestampMixin):
+    """Таблица данных о покупателк."""
+
+    __tablename__ = 'customer'
+
+    name: Mapped[str]
+    surname: Mapped[str]
+    email: Mapped[str] = mapped_column(EmailStr(), unique=True)
+    phone: Mapped[str]
+    adress: Mapped[dict]
+
+
+class OrderStatus(Enum):
+    """Возможные статусы заказа."""
+
+    PENDING = 'pending'
+    SHIPPED = 'shipped'
+    DELIVERED = 'delivered'
+    CANCELED = 'canceled'
+
+
+class Order(UUIDMixin, TimestampMixin):
+    """Таблица заказа."""
+
+    __tablename__ = 'order'
+
+    customer_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey('customer.id'), default=uuid.uuid4,
+    )
+
+    order_date: Mapped[datetime] = mapped_column(
+        datetime(timezone), server_default=func.now(), onupdate=func.now(),
+    )
+
+    status: Mapped[OrderStatus] = mapped_column(
+        Enum(OrderStatus), nullable=False, default=OrderStatus.PENDING,
+    )
+
+    total_amount: Mapped[float]
