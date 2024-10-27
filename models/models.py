@@ -2,8 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 
-import bcrypt
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import EmailStr
 from sqlalchemy import ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID  # Для UUID
 from sqlalchemy.ext.declarative import declarative_base
@@ -11,31 +10,6 @@ from sqlalchemy.orm import (Mapped, declarative_mixin, mapped_column,
                             relationship)
 
 Base = declarative_base()
-
-
-class UserRole(Enum):
-    """Класс выбора роли пользователя."""
-
-    USER = 'user'
-    ADMIN = 'admin'
-
-
-class ValidUsers(BaseModel):
-    """Валидация данный в таблицу Users."""
-
-    email: EmailStr
-    name: str
-    surname: str
-    role: UserRole.User
-    password: Field(min_length=5)
-
-    def hashing_password(self, password):
-
-        bytes = password.encode('utf-8')
-        salt = bcrypt.gensalt()
-        hash = bcrypt.hashpw(bytes, salt)
-
-        return hash
 
 
 @declarative_mixin
