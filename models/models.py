@@ -115,3 +115,27 @@ class Order(UUIDMixin, TimestampMixin):
     )
 
     total_amount: Mapped[float]
+
+    customer = relationship('Customer', back_populates='orders')
+    items = relationship('OrderItem', back_populates='order')
+
+
+class OrderItem(UUIDMixin, TimestampMixin):
+    """Товары в звказе."""
+
+    __tablename__ = 'order_item'
+
+    order_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey('order.id'), default=uuid.uuid4,
+    )
+
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey('products.id'), default=uuid.uuid4,
+    )
+
+    quantity: Mapped[int]  # Кол-во вещей в заказе
+
+    price: Mapped[float]  # Изметить тип данных
+
+    order = relationship('Order', back_populates='items')
+    product = relationship('Product')
