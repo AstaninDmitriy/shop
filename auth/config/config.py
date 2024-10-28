@@ -29,3 +29,15 @@ class PgSqlSettings(ServiseSettings):
     db_name: str
     db_user: str
     db_driver: str
+
+
+class RedisClient(ServiseSettings):
+    """Settings for Redis.
+
+    Args:
+        ServiseSettings (class): Servise settings
+    """
+
+    redis_host: str
+    redis_port: int
+    redis_db: int
