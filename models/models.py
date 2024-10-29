@@ -116,7 +116,7 @@ class Order(UUIDMixin, TimestampMixin):
 
     total_amount: Mapped[float]
 
-    customer = relationship('Customer', back_populates='orders')
+    customer = relationship('Customer', back_populates='order')
     items = relationship('OrderItem', back_populates='order')
 
 
@@ -139,3 +139,63 @@ class OrderItem(UUIDMixin, TimestampMixin):
 
     order = relationship('Order', back_populates='items')
     product = relationship('Product')
+
+
+class StatusPay(Enum):
+    """Возможные статусы оплаты."""
+
+    COMPLETED = 'completed'
+    FAILED = 'failed'
+    EXPECTATION = 'waiting for payment'
+
+
+class Payment(UUIDMixin, TimestampMixin):
+    """Схема платежей."""
+
+    __tablename__ = 'payment'
+
+    order_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey('order.id'), default=uuid.uuid4,
+    )
+
+    amount: Mapped[float]  # Изметить тип данных
+
+    payment_date: Mapped[uuid.UUID]  # Доработать
+
+    status: Mapped[StatusPay] = mapped_column(
+        Enum(StatusPay), nullable=False, default=StatusPay.EXPECTATION,
+
+    )
+
+    order = relationship('Order', back_populates='payment')
+
+
+class Cart(TimestampMixin, UUIDMixin):
+    """Корзина."""
+
+    __tablename__ = 'cart'
+
+    customer_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey('customer.id'), default=uuid.uuid4
+    )
+
+    customer = relationship('customer', back_populates='cart')
+
+
+class CartItem(UUIDMixin, TimestampMixin):
+    """Товары в корзине."""
+
+    __tablename__ = 'cart_item'
+
+    cart_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey('cart.id'), default=uuid.uuid4,
+    )
+
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey('product.id'), default=uuid.uuid4,
+    )
+
+    quanyity: Mapped[int]  # Кол-во продуктов
+
+    product = relationship('Product')
+    cart = relationship('Cart', back_populates='cart_item')
