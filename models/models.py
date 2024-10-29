@@ -5,11 +5,14 @@ from enum import Enum
 from pydantic import EmailStr
 from sqlalchemy import ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID  # Для UUID
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import (Mapped, declarative_mixin, mapped_column,
-                            relationship)
+from sqlalchemy.orm import (DeclarativeBase, Mapped, declarative_mixin,
+                            mapped_column, relationship)
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    """Default base model."""
+
+    pass
 
 
 @declarative_mixin
@@ -176,7 +179,7 @@ class Cart(TimestampMixin, UUIDMixin):
     __tablename__ = 'cart'
 
     customer_id: Mapped[uuid.UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey('customer.id'), default=uuid.uuid4
+        PG_UUID(as_uuid=True), ForeignKey('customer.id'), default=uuid.uuid4,
     )
 
     customer = relationship('customer', back_populates='cart')
