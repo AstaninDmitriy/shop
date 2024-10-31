@@ -41,3 +41,6 @@ class RedisClient(ServiseSettings):
     redis_host: str
     redis_port: int
     redis_db: int
+
+
+pgsqlsettings = PgSqlSettings()
