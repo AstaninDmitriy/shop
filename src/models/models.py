@@ -2,20 +2,19 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, func
+import sqlalchemy
+from sqlalchemy import DateTime
+from sqlalchemy import Enum as SaEnum
+from sqlalchemy import ForeignKey, Numeric, String, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID  # Для UUID
 from sqlalchemy.orm import (DeclarativeBase, Mapped, declarative_mixin,
                             mapped_column, relationship)
 
-
-class Base(DeclarativeBase):
-    """Default base model."""
-
-    pass
+metadata = sqlalchemy.MetaData(schema='public')
 
 
 @declarative_mixin
-class UUIDMixin(Base):
+class UUIDMixin:
     """Миксин для добавления уникального идентификатора."""
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -24,7 +23,7 @@ class UUIDMixin(Base):
 
 
 @declarative_mixin
-class TimestampMixin(Base):
+class TimestampMixin:
     """Миксин для добавления временных меток создания и обновления."""
 
     created_at: Mapped[str] = mapped_column(
@@ -35,33 +34,39 @@ class TimestampMixin(Base):
     )
 
 
-class Product(UUIDMixin, TimestampMixin):
+class Base(DeclarativeBase, TimestampMixin, UUIDMixin):
+    """Default base model."""
+
+    metadata = metadata
+
+
+class Product(Base):
     """Таблица товаров."""
 
     __tablename__ = 'product'
 
-    name: Mapped[str] = mapped_column(String(50))
-    description: Mapped[str] = mapped_column(String(1000))
-    price: Mapped[Numeric(10, 2)]
+    name: Mapped[str] = mapped_column(String(64))
+    description: Mapped[str] = mapped_column(String(1024))
+    price: Mapped[float] = mapped_column(Numeric(10, 2))
     stock: Mapped[int]
 
     category = relationship('ProductCategory', back_populates='product')
 
 
-class Category(UUIDMixin, TimestampMixin):
+class Category(Base):
     """Таблица категорий."""
 
     __tablename__ = 'category'
 
     category_name: Mapped[str] = mapped_column(
-        String(50), nullable=False,
+        String(64), nullable=False,
     )
-    description: Mapped[str] = mapped_column(String(1000))
+    description: Mapped[str] = mapped_column(String(1024))
 
     products = relationship('ProductCategory', back_populates='category')
 
 
-class ProductCategory(UUIDMixin, TimestampMixin):
+class ProductCategory(Base):
     """Таблица связующая Product и Category."""
 
     __tablename__ = 'product_category'
@@ -78,7 +83,7 @@ class ProductCategory(UUIDMixin, TimestampMixin):
     category = relationship('Category', back_populates='product')
 
 
-class Customer(UUIDMixin, TimestampMixin):
+class Customer(Base):
     """Таблица данных о покупателк."""
 
     __tablename__ = 'customer'
@@ -87,7 +92,7 @@ class Customer(UUIDMixin, TimestampMixin):
     surname: Mapped[str]
     email: Mapped[str] = mapped_column(String, unique=True)
     phone: Mapped[str]
-    address: Mapped[str]  # Поментять str на словарь
+    address: Mapped[str]  # Создать доп таблицу для хранения адресса
 
     order = relationship('Order', back_populates='customer')
     cart = relationship('Cart', back_populates='customer')
@@ -102,7 +107,7 @@ class OrderStatus(Enum):
     CANCELED = 'canceled'
 
 
-class Order(UUIDMixin, TimestampMixin):
+class Order(Base):
     """Таблица заказа."""
 
     __tablename__ = 'order'
@@ -116,16 +121,15 @@ class Order(UUIDMixin, TimestampMixin):
     )
 
     status: Mapped[OrderStatus] = mapped_column(
-        Enum(OrderStatus), nullable=False, default=OrderStatus.PENDING,
+        SaEnum(OrderStatus), nullable=False, default=OrderStatus.PENDING,
     )
 
-    total_amount: Mapped[Numeric(10, 2)]
-
+    total_amount: Mapped[float] = mapped_column(Numeric(10, 2))
     customer = relationship('Customer', back_populates='order')
     items = relationship('OrderItem', back_populates='order')
 
 
-class OrderItem(UUIDMixin, TimestampMixin):
+class OrderItem(Base):
     """Товары в звказе."""
 
     __tablename__ = 'order_item'
@@ -140,7 +144,7 @@ class OrderItem(UUIDMixin, TimestampMixin):
 
     quantity: Mapped[int]  # Кол-во вещей в заказе
 
-    price: Mapped[Numeric]
+    price: Mapped[float] = mapped_column(Numeric(10, 2))
 
     order = relationship('Order', back_populates='items')
     product = relationship('Product')
@@ -154,7 +158,7 @@ class StatusPay(Enum):
     EXPECTATION = 'waiting for payment'
 
 
-class Payment(UUIDMixin, TimestampMixin):
+class Payment(Base):
     """Схема платежей."""
 
     __tablename__ = 'payment'
@@ -163,21 +167,21 @@ class Payment(UUIDMixin, TimestampMixin):
         PG_UUID(as_uuid=True), ForeignKey('order.id'), default=uuid.uuid4,
     )
 
-    amount: Mapped[Numeric(10, 2)]
+    amount: Mapped[float] = mapped_column(Numeric(10, 2))
 
     payment_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(),
     )
 
     status: Mapped[StatusPay] = mapped_column(
-        Enum(StatusPay), nullable=False, default=StatusPay.EXPECTATION,
+        SaEnum(StatusPay), nullable=False, default=StatusPay.EXPECTATION,
 
     )
 
     order = relationship('Order', back_populates='payment')
 
 
-class Cart(TimestampMixin, UUIDMixin):
+class Cart(Base):
     """Корзина."""
 
     __tablename__ = 'cart'
@@ -191,7 +195,7 @@ class Cart(TimestampMixin, UUIDMixin):
     cart_item = relationship('CartItem', back_populates='cart')
 
 
-class CartItem(UUIDMixin, TimestampMixin):
+class CartItem(Base):
     """Товары в корзине."""
 
     __tablename__ = 'cart_item'
