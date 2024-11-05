@@ -10,7 +10,9 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID  # Для UUID
 from sqlalchemy.orm import (DeclarativeBase, Mapped, declarative_mixin,
                             mapped_column, relationship)
 
-metadata = sqlalchemy.MetaData(schema='public')
+from auth.config.config import pgsqlsettings
+
+metadata = sqlalchemy.MetaData(schema=pgsqlsettings.db_shema)
 
 
 @declarative_mixin

@@ -1,5 +1,8 @@
 """Config file."""
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+load_dotenv()
 
 
 class ServiceSettings(BaseSettings):
@@ -28,6 +31,7 @@ class PgSqlSettings(ServiceSettings):
     db_name: str
     db_user: str
     db_driver: str
+    db_shema: str
 
 
 pgsqlsettings = PgSqlSettings()
