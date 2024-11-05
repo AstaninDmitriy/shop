@@ -1,5 +1,5 @@
 """Файл для работы с базами данных."""
-from config.config import pgsqlsettings
+from ..config.config import pgsqlsettings
 
 
 class PostgreSql():
