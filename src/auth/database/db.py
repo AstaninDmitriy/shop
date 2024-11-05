@@ -15,4 +15,3 @@ class PostgreSql():
             port=pgsqlsettings.db_port,
             name=pgsqlsettings.db_name,
         )
-
