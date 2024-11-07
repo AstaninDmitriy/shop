@@ -28,5 +28,18 @@ class JwtTokens():
         jwtdecode = {'exp': exp, 'sub': str(id)}
         return jwt.encode(jwtdecode, self.sekretkey, self.algorim)
 
+    def create_refresh_tokens(self, id: int) -> str:
+        """Создайние refresh token.
+
+        Args:
+            id (int): id пользователя
+
+        Returns:
+            str: refresh token
+        """
+        exp = datetime.now() + timedelta(days=(self.refreshtime))
+        jwtdecode = {'exp': exp, 'sub': str(id)}
+        return jwt.encode(jwtdecode, self.sekretkey, self.algorim)
+
 
 jwttokens = JwtTokens()
