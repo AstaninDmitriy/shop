@@ -2,7 +2,8 @@
 from datetime import datetime, timedelta
 
 from config.config import jwtsettings
-from jose import jwt
+from jose import jwt, JWTError
+from typing import Union
 
 
 class JwtTokens():
@@ -40,6 +41,12 @@ class JwtTokens():
         exp = datetime.now() + timedelta(days=(self.refreshtime))
         jwtdecode = {'exp': exp, 'sub': str(id)}
         return jwt.encode(jwtdecode, self.sekretkey, self.algorim)
+
+    def validate_tokens(self, token: str) -> Union[str, bool]:
+        try:
+            return jwt.decode(token, self.sekretkey, self.algorim)
+        except JWTError:
+            return False
 
 
 jwttokens = JwtTokens()
