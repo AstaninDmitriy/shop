@@ -10,7 +10,7 @@ class ServiceSettings(BaseSettings):
     """
 
     model_config = (SettingsConfigDict(
-        env_file='../.env',
+        env_file='.env',
         extra='ignore',
     ))
 
@@ -31,4 +31,18 @@ class PgSqlSettings(ServiceSettings):
     db_shema: str
 
 
+class JwtSettings(ServiceSettings):
+    """Settings for JWT.
+
+    Args:
+        ServiceSettings (class): Servise settings
+    """
+
+    JWT_SEKRET_KEY: str
+    ALGORITM: str
+    ACCESS_TIME: int
+    REFRESH_TIME: int
+
+
+jwtsettings = JwtSettings()
 pgsqlsettings = PgSqlSettings()
